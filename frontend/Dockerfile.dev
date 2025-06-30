@@ -1,0 +1,31 @@
+# 开发环境Dockerfile - 配置国内源优化
+FROM node:18-alpine
+
+WORKDIR /app
+
+# 配置阿里云Alpine源
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+
+# 配置淘宝npm源
+RUN npm config set registry https://registry.npmmirror.com
+
+# 安装开发工具
+RUN apk add --no-cache \
+    git \
+    curl \
+    vim
+
+# 复制package文件
+COPY package*.json ./
+
+# 安装依赖
+RUN npm install
+
+# 复制源代码
+COPY . .
+
+# 暴露端口
+EXPOSE 3000
+
+# 开发环境启动命令
+CMD ["npm", "run", "dev"]

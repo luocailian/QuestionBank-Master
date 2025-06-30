@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # MySQL数据库
+  mysql:
+    image: mysql:8.0
+    container_name: questionbank_mysql_dev
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: questionbank_master
+      MYSQL_USER: questionbank
+      MYSQL_PASSWORD: questionbank123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+      - ./backend/database_schema.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - questionbank_dev_network
+
+  # Redis缓存
+  redis:
+    image: redis:7-alpine
+    container_name: questionbank_redis_dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - questionbank_dev_network
+
+  # Flask后端开发环境
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: questionbank_backend_dev
+    restart: unless-stopped
+    environment:
+      FLASK_ENV: development
+      FLASK_DEBUG: 1
+      MYSQL_HOST: mysql
+      MYSQL_USER: questionbank
+      MYSQL_PASSWORD: questionbank123
+      MYSQL_DATABASE: questionbank_master
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: dev-secret-key-change-in-production
+      JWT_SECRET_KEY: dev-jwt-secret-key-change-in-production
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - questionbank_dev_network
+
+  # Vue前端开发环境
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: questionbank_frontend_dev
+    restart: unless-stopped
+    environment:
+      VITE_API_BASE_URL: http://localhost:5000/api/v1
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - questionbank_dev_network
+
+volumes:
+  mysql_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local
+
+networks:
+  questionbank_dev_network:
+    driver: bridge

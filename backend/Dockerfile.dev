@@ -1,0 +1,57 @@
+# 开发环境Dockerfile - 配置国内源优化
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# 配置阿里云Debian源
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list && \
+    sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
+
+# 配置清华大学pip源
+RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && \
+    pip config set global.trusted-host pypi.tuna.tsinghua.edu.cn
+
+# 安装系统依赖
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    python3-dev \
+    libffi-dev \
+    libssl-dev \
+    curl \
+    vim \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# 升级pip
+RUN pip install --upgrade pip
+
+# 复制requirements文件
+COPY requirements.txt .
+
+# 安装Python依赖
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 安装开发工具
+RUN pip install --no-cache-dir \
+    pytest \
+    pytest-cov \
+    black \
+    flake8 \
+    isort
+
+# 复制应用代码
+COPY . .
+
+# 创建非root用户
+RUN groupadd -r appuser && useradd -r -g appuser appuser && \
+    chown -R appuser:appuser /app
+
+# 切换到非root用户
+USER appuser
+
+# 暴露端口
+EXPOSE 5000
+
+# 开发环境启动命令
+CMD ["python", "app.py"]

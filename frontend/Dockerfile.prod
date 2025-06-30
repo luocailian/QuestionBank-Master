@@ -3,6 +3,12 @@ FROM node:18-alpine as builder
 
 WORKDIR /app
 
+# 配置阿里云Alpine源
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+
+# 配置淘宝npm源
+RUN npm config set registry https://registry.npmmirror.com
+
 # 复制package文件
 COPY package*.json ./
 
@@ -21,6 +27,9 @@ RUN npm run build
 
 # 生产环境 - 使用优化的nginx镜像
 FROM nginx:alpine
+
+# 配置阿里云Alpine源
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 
 # 安装curl用于健康检查
 RUN apk add --no-cache curl

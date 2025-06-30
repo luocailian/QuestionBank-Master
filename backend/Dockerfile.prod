@@ -3,6 +3,10 @@ FROM python:3.9-slim as builder
 
 WORKDIR /app
 
+# 配置阿里云Ubuntu源
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list && \
+    sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
+
 # 安装构建依赖
 RUN apt-get update && apt-get install -y \
     gcc \
@@ -14,6 +18,10 @@ RUN apt-get update && apt-get install -y \
 
 # 复制依赖文件
 COPY requirements.txt .
+
+# 配置清华大学pip源
+RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && \
+    pip config set global.trusted-host pypi.tuna.tsinghua.edu.cn
 
 # 创建虚拟环境并安装依赖
 RUN python -m venv /opt/venv
@@ -28,6 +36,10 @@ FROM python:3.9-slim
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
 WORKDIR /app
+
+# 配置阿里云Ubuntu源
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list && \
+    sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
 
 # 安装运行时依赖
 RUN apt-get update && apt-get install -y \
