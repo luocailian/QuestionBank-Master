@@ -1,0 +1,55 @@
+# Flask核心
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-Migrate==4.0.5
+Flask-CORS==4.0.0
+Flask-JWT-Extended==4.5.3
+Flask-RESTX==1.2.0
+
+# 数据库
+PyMySQL==1.1.0
+SQLAlchemy==2.0.21
+
+# 密码加密
+bcrypt==4.0.1
+
+# 文件解析
+PyMuPDF==1.23.8  # PDF解析
+python-docx==0.8.11  # DOCX解析
+openpyxl==3.1.2  # XLSX解析
+
+# 数据处理
+pandas==2.1.1
+numpy==1.25.2
+
+# 图像处理（用于PDF中的图片）
+Pillow==10.0.1
+
+# 验证和序列化
+marshmallow==3.20.1
+marshmallow-sqlalchemy==0.29.0
+
+# 工具库
+python-dotenv==1.0.0
+click==8.1.7
+Werkzeug==2.3.7
+
+# 缓存（可选）
+redis==5.0.1
+Flask-Caching==2.1.0
+
+# 邮件（可选）
+Flask-Mail==0.9.1
+
+# 任务队列（可选，用于文件解析）
+celery==5.3.6
+
+# 开发工具
+pytest==7.4.2
+pytest-flask==1.2.0
+pytest-cov==4.1.0
+black==23.9.1
+flake8==6.1.0
+
+# 生产环境
+gunicorn==21.2.0

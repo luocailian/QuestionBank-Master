@@ -1,0 +1,54 @@
+# 多阶段构建 - 生产环境优化
+FROM node:18-alpine as builder
+
+WORKDIR /app
+
+# 复制package文件
+COPY package*.json ./
+
+# 安装依赖（使用npm ci for production）
+RUN npm ci --only=production --silent
+
+# 复制源代码
+COPY . .
+
+# 构建参数
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
+# 构建应用
+RUN npm run build
+
+# 生产环境 - 使用优化的nginx镜像
+FROM nginx:alpine
+
+# 安装curl用于健康检查
+RUN apk add --no-cache curl
+
+# 复制构建结果
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# 复制nginx配置
+COPY nginx.prod.conf /etc/nginx/nginx.conf
+
+# 创建nginx用户目录
+RUN mkdir -p /var/cache/nginx/client_temp && \
+    mkdir -p /var/cache/nginx/proxy_temp && \
+    mkdir -p /var/cache/nginx/fastcgi_temp && \
+    mkdir -p /var/cache/nginx/uwsgi_temp && \
+    mkdir -p /var/cache/nginx/scgi_temp && \
+    chown -R nginx:nginx /var/cache/nginx
+
+# 创建日志目录
+RUN mkdir -p /var/log/nginx && \
+    chown -R nginx:nginx /var/log/nginx
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+    CMD curl -f http://localhost/health || exit 1
+
+# 暴露端口
+EXPOSE 80 443
+
+# 启动nginx
+CMD ["nginx", "-g", "daemon off;"]
