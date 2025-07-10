@@ -94,13 +94,16 @@ git clone <repository-url>
 cd questionbank-master
 ```
 
-2. **一键启动开发环境**
+2. **Docker Compose 启动（推荐）**
 ```bash
-chmod +x start-dev.sh
-./start-dev.sh
+# 启动开发环境
+docker-compose -f docker-compose.dev.yml up -d
+
+# 查看服务状态
+docker-compose -f docker-compose.dev.yml ps
 ```
 
-3. **手动安装（可选）**
+3. **手动安装（开发调试）**
 
 **后端设置**
 ```bash
@@ -131,21 +134,24 @@ npm run dev
 
 ### 生产环境部署
 
-**使用Docker Compose（推荐）**
+**使用Docker Compose**
 ```bash
 # 配置环境变量
-cp backend/.env.example backend/.env
+cp .env.prod.example .env.prod
 # 编辑环境变量文件
 
 # 启动所有服务
-docker-compose up -d
+docker-compose -f docker-compose.prod.yml up -d --build
 
 # 查看服务状态
-docker-compose ps
+docker-compose -f docker-compose.prod.yml ps
 
 # 查看日志
-docker-compose logs -f
+docker-compose -f docker-compose.prod.yml logs -f
 ```
+
+**详细启动指南**
+请参考 [手动启动指南](docs/手动启动指南.md) 获取完整的启动方式说明。
 
 ## 📖 使用说明
 
